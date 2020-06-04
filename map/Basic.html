@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>水中世界1-1</title>
+    <style>
+        canvas{
+            cursor: pointer;
+        }
+
+    </style>
+</head>
+
+<body>
+    <canvas> </canvas>
+
+
+    <script>
+
+        //基本設定
+        var canvas = document.querySelector('canvas');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        var ctx = canvas.getContext('2d');
+
+        //圖片先創陣列，再個別宣告圖片
+        var photoArray = new Array();
+        photoArray[0] = new Image();
+        photoArray[0].src = 'GUI/Gfish0.png';
+        photoArray[1] = new Image();
+        photoArray[1].src = 'GUI/Gfish1.png';
+        
+        var background = new Image();
+        background.src = 'background.jpg';
+        
+        // //不需要用到的圖片
+        // var net = new Image();
+        // net.src='net.png';
+
+        // var avatar = new Image();
+        // avatar.src = 'GUI/head.png';
+
+        var coinFish = new Image();
+        coinFish.src = 'coinFish.png';
+
+        var GUIcoin = new Image();
+        GUIcoin.src = 'GUI/coin.png';
+
+        var TimeBomb = new Image();
+        TimeBomb.src = 'GUI/timer.png';
+
+        //GUI 潛艇
+        var GUIsubmarine = new Image();
+        GUIsubmarine.src ="GUI/submarine.png";
+
+        var Locker = new Image();
+        Locker.src = "GUI/lock.png";
+
+
+        //計時功能
+        var timer = 30;
+        var TimeStart = setInterval(timeAdd, 1000);
+        function timeAdd(){
+            timer -= 1;
+            if(timer < 0){
+                clearInterval(TimeStart);
+                clearInterval(start);
+                GameOverCoin = coin;
+                coin = 0;
+            }
+        }
+
+        //破關目標金幣
+        var FinishCoin = 50;
+        //關卡結束時獲得金幣
+        var GameOverCoin = 0;
+
+        //先畫不會動的圓圈，另外的部門改變函數，丟回來再畫
+        // Receive再Draw 和 Revised再Draw
+        function Pro(x, y, dx, dy, sqm) {
+            this.x = x;
+            this.y = y;
+            this.dx = dx;
+            this.dy = dy;
+            this.sqm = sqm;
+            this.draw = function () {
+                //ctx.fillRect( this.x, this.y, this.sqm, this.sqm);
+                
+                ctx.drawImage(photoArray[this.sqm], this.x, this.y, 100, 100);
+            }
+
+            this.change = function () {
+                this.x += this.dx;
+                this.y += this.dy;
+                this.sqm += 1;
+                if (this.sqm >= photoArray.length ){this.sqm = 0;}
+                this.draw();
+            }
+        }
+
+    //金幣動畫工廠
+
+        function moneyPro(x,y){
+            this.x = x;
+            this.y = y;
+            if(blingCoin.length >= 1){
+                for(i = 0; i < blingCoin.length; i++){
+                ctx.drawImage(coinFish, blingCoin[i].x +25, blingCoin[i].y+25, 50, 50);
+                }
+                if(blingCoin.length >= 3){
+                blingCoin.shift();
+                }
+            }
+        }
+    //潛艇動畫工廠
+    var subUpDown = -30;
+        function submarine(){
+            if(subUpDown >= -30){
+                subUpDown += 3;
+            }
+            if(subUpDown >= 30){
+                subUpDown -= 3 ;
+            }
+ 
+            //GUI BAR
+            ctx.drawImage(GUIsubmarine, 30, subUpDown, 240, 200);
+            //設定字體
+            ctx.font = '48px serif';
+            //金幣獲得數
+            ctx.drawImage(GUIcoin, 800, subUpDown, 250, 40);
+            ctx.fillText(coin, 920, subUpDown+35);
+            //計時器
+            ctx.drawImage(TimeBomb, 500, subUpDown, 250, 40);
+            ctx.fillText(timer, 620, subUpDown+35);
+            //未開啟功能
+            ctx.drawImage(Locker, 280, subUpDown, 120, 40);
+        }
+
+
+        //創造一個物件 然後丟去上面Pro跑陣列
+        //用push可無限創造新物件.....記得設定停止!!!!!
+        var FishArray = [];
+        
+        create();
+        function create(){
+            for (var i = 0; i < 20; i++) {
+                var x = Math.random() * (-30)-100;
+                var y = Math.random() * innerHeight;
+                var dx = Math.random()*5;
+                var dy = Math.random();
+                var sqm = Math.floor(Math.random() * 2);
+
+                FishArray.push(new Pro(x, y, dx, dy, sqm));
+                
+            }
+        }
+
+        //每秒清除殘影，並且利用每秒的特性(修改成interval)，每秒跑for迴圈丟新位置給上面畫圖
+        // Clean和Give的角色(呼叫)
+        function move() {
+            ctx.clearRect(0, 0, innerWidth, innerHeight);
+            //畫背景
+            ctx.drawImage(background, 0, 0, innerWidth, innerHeight);
+            submarine();
+            console.log(coin);
+            for (let i = 0; i < FishArray.length; i++) {
+                FishArray[i].change();
+            }
+            moneyPro();
+        }
+
+        //呼叫每秒的函數和move >> 修改成interval (為了動畫)
+        var start = setInterval(move, 100);
+        
+     
+       
+        canvas.addEventListener("click", caculate);
+
+
+        // //滑鼠移動
+        // canvas.addEventListener("mousemove", mouseCirle);
+        
+        // function mouseCirle (evt) {
+        //     ctx.beginPath();
+        //     ctx.beginPath();
+        //     ctx.arc(evt.offsetX, evt.offsetY, 35, 0, 2*Math.PI);
+        //     ctx.stroke();
+        // }
+        
+        var coin = 0 ;
+        var blingCoin = new Array;
+
+        function caculate(evt) {
+
+            //a = 圖片半徑
+            //調整了板塊的中心位置xy值
+            //計算每次點擊時，與所有板塊距離
+            //如果小於57(a)，就取代a，並且獲取該區塊陣列位置[theNearest]
+            //重複以上步驟至陣列長度結束
+            let a = 57;
+            for (var i = 0; i < FishArray.length; i++) {
+                var Posx = evt.offsetX - (FishArray[i].x + 50);
+                var Posy = evt.offsetY - (FishArray[i].y + 50);
+                let b = Math.hypot(Posx, Posy);
+                if (b < a) {
+                    a = b;
+                    var theNearest = i + 1;
+                } else { };
+            }
+
+            //如果有小於35距離的　就刪掉那隻魚
+            if (theNearest) {
+                theNearest -= 1 ;
+                coin += 1 ;
+                blingCoin.push(new moneyPro(FishArray[theNearest].x, FishArray[theNearest].y));
+                FishArray.splice(theNearest, 1);
+            }
+
+            //清除掉超出螢幕的魚
+            for (let i = 0; i < FishArray.length; i++) {
+                if(FishArray[i].x > innerWidth || FishArray[i].y > innerHeight){
+                        FishArray.splice( i, 1);
+                    }
+
+                //畫面魚若小於40隻就生新一批（滑鼠點擊時）
+                if(FishArray.length < 20){
+                create();
+                }   else{};
+            }
+
+            if(coin >= FinishCoin){
+            var promise1 = new Promise(function(resolve, reject) {
+            setTimeout(function() {
+                resolve('Okay');
+            }, 50);
+            });
+
+            promise1.then(function(value) {
+                clearInterval(start);
+                clearInterval(TimeStart);
+                GameOverCoin = coin;
+                coin = 0;
+            });
+            }
+            
+            }
+
+
+
+    </script>
+
+
+</body>
+
+</html>
